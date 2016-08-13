@@ -18,7 +18,7 @@ var client = new Twitter({
 	access_token_key: process.env.ACCESS_TOKEN_KEY,
 	access_token_secret: process.env.ACCESS_TOKEN_SECRET
 });
-console.log(process.env.ACCESS_TOKEN_SECRET);
+
 var stream = client.stream('user');
 
 stream.on('follow', function(event) {
