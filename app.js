@@ -30,7 +30,7 @@ stream.on('follow', function(event) {
 	client.post('direct_messages/new', 
 			{
 				screen_name: username, 
-				text: "Thanks  for following me on twitter :3 Let's connect here also instagram.com/nrdwnd! Have a great day :-)"
+				text: "Thanks for following me on twitter :3 Let's connect here also instagram.com/nrdwnd! Have a great day :-)"
 			}, function(err, data, response) {
 				if (err != null) throw err;
 			});
