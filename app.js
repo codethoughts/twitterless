@@ -6,15 +6,6 @@ var app = express();
 var Twitter = require("twitter");
 var MY_USERNAME = "nrdwnd";
 var _ = require("lodash");
-// var Gelf = require("gelf");
-
-// var logger = new Gelf({
-// 	graylogPort: 9200,
-// 	graylogHostname: "192.168.0.7",
-// 	connection: "lan",
-// 	maxChunkSizeWan: 1420,
-// 	maxChunkSizeLan: 8154
-// });
 
 var request_ip = require("request-ip");
 var dbip = require("dbip");
@@ -52,7 +43,9 @@ var user_stream = client.stream("user");
 user_stream.on("follow", function(event) {
 	var username = event.source.screen_name;
 	if (username == MY_USERNAME) return;
-	client.post("direct_messages/new", 
+	var delayTimeForDirect = randomDelayTimeMs(23,26);
+	setTimeout(function(){
+		client.post("direct_messages/new", 
 			{
 				screen_name: username, 
 				text: "Thanks for following me on twitter :3\nHave a good one!"
@@ -60,6 +53,18 @@ user_stream.on("follow", function(event) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
 			});
+	},delayTimeForDirect);
+
+	var delayTimeForFollow = randomDelayTimeMs(26,30);
+	setTimeout(function(){
+		client.post("friendships/create", {
+			screen_name: username,
+			follow: true
+		}, function(error, data, response) {
+			if (!error) console.log({"event":"FOLLOW "+username});
+			else console.error(error);
+		});
+	},delayTimeForFollow);
 });
 
 user_stream.on("error", function(error) {
@@ -79,8 +84,8 @@ var tech_stream = client.stream("statuses/filter",
 			stream.on("data", function(event) {
 				var status_id = event.id;
 				var user = event.user;
-				var delayTime = randomDelayTime();
-				if (isUserValid(user)) {
+				var delayTime = randomDelayTimeMs(10,600);
+				if (isUserValidByFollowers(user,1000)) {
 					var url = event.urls.url;
 					var now = new Date().getTime();
 					var time = new Date(now + delayTime);
@@ -101,15 +106,14 @@ var tech_stream = client.stream("statuses/filter",
 		}
 );
 
-var randomDelayTime = function () {
-	// random time from 10 min to 24 hours
-	return random(600000,86400000);
+var randomDelayTimeMs = function (min,max) {
+	return random(min*60000,max*60000);
 }
 
 var random = function (min,max) {
 	return Math.floor((Math.random() * max) + min);
 }
 
-var isUserValid = function (user) {
-	return (user != null && user.followers_count > 2000 ? true : false);
+var isUserValidByFollowers = function (user,count) {
+	return (user != null && user.followers_count > count ? true : false);
 }
