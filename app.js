@@ -49,7 +49,7 @@ user_stream.on("follow", function(event) {
 	client.post("direct_messages/new", 
 			{
 				screen_name: username, 
-				text: "Ahoy 👻 Thanks for following me on twitter!\nHave a good day :3"
+				text: "Ahoy ⚓️ Thanks for following me on twitter!\nHave a good day :3"
 			}, function(error, data, response) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
