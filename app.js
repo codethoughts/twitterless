@@ -55,7 +55,7 @@ user_stream.on("follow", function(event) {
 	client.post("direct_messages/new", 
 			{
 				screen_name: username, 
-				text: "Thanks for following me on twitter!\nEnjoy the rest of your day :3"
+				text: "Thanks for following me on twitter :3\nHave a good one!"
 			}, function(error, data, response) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
