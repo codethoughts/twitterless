@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "cron": "^1.1.0",
+    "dbip": "^1.0.0",
     "express": "4.14.0",
     "lodash": "^4.15.0",
+    "request-ip": "^1.2.2",
     "twitter": "1.4.0"
   }
 }

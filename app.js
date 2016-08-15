@@ -16,10 +16,16 @@ var _ = require("lodash");
 // 	maxChunkSizeLan: 8154
 // });
 
+var request_ip = require("request-ip");
+var dbip = require("dbip");
+
 app.set("port", (process.env.PORT || 5000));
 
 app.get("/", function (req, res) {
-	console.log("Request / redirected")
+	var ip = request_ip.getClientIp(req);
+	dbip(ip).then(ip_info => {
+		console.log({"event": "Request / redirected", "ip_info": ip_info});
+	});
 	res.redirect("http://twitter.com/nrdwnd");
 });
 
