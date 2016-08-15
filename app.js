@@ -19,12 +19,12 @@ var _ = require("lodash");
 app.set("port", (process.env.PORT || 5000));
 
 app.get("/", function (req, res) {
-	// logger.emit("gelf.log","Request / redirected")
+	console.log("Request / redirected")
 	res.redirect("http://twitter.com/nrdwnd");
 });
 
 app.listen(app.get("port"), function () {
-	  // logger.emit("gelf.log",{"status":"up","port":app.get("port")});
+	console.log("App is running on " + app.get("port") + " port");
 });
 
 var client = new Twitter({
@@ -49,14 +49,15 @@ user_stream.on("follow", function(event) {
 	client.post("direct_messages/new", 
 			{
 				screen_name: username, 
-				text: "Ahoy! Thanks for following me on twitter 👻! Have a good day :3"
+				text: "Ahoy 👻 Thanks for following me on twitter!\nHave a good day :3"
 			}, function(error, data, response) {
-				// if (!error) logger.emit("gelf.log",{"event":"SEND DIRECT TO "+username});
+				if (!error) console.log({"event":"SEND DIRECT TO "+username});
+				else console.error(error);
 			});
 });
 
 user_stream.on("error", function(error) {
-	  throw error;
+	  console.error(error);
 });
 
 var TECH_STRINGS = require("./keywords.js").tech();
@@ -74,17 +75,22 @@ var tech_stream = client.stream("statuses/filter",
 				var user = event.user;
 				var delayTime = randomDelayTime();
 				if (isUserValid(user)) {
+					var url = event.urls.url;
+					var now = new Date().getTime();
+					var time = new Date(now + delayTime);
+					console.log({"event": "LIKE", "url": url,"time": time});
 					setTimeout(function () {
 						client.post("favorites/create", {id: status_id}, 
 							function(error, data, response) {
-								// if (!error) logger.emit("gelf.log",{"event":"LIKE "+status_id});
+								if (!error) console.log({"event":"LIKE "+status_id});
+								else console.error(error);
 							});
 					},delayTime);
 			}
 		});
 			
 			stream.on("error", function(error) {
-				throw error;
+				console.error(error);
 			});
 		}
 );
