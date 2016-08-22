@@ -48,13 +48,17 @@ user_stream.on("follow", function(event) {
 		client.post("direct_messages/new", 
 			{
 				screen_name: username, 
-				text: "Thanks for following me on twitter :3\nHave a good one!"
+				text: "Thanks for following me on twitter :3\nEnjoy the ride!"
 			}, function(error, data, response) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
 			});
 	},delayTimeForDirect);
 
+	var user_followers = event.source.followers_count;
+	var user_followings = event.source.friends_count;
+	var ratio = user_followers / user_followings;
+	if (ratio < 1.0) return;
 	var delayTimeForFollow = randomDelayTimeMs(26,30);
 	setTimeout(function(){
 		client.post("friendships/create", {
@@ -76,7 +80,7 @@ var TECH_STRINGS = require("./keywords.js").tech();
 // Statuses stream is used to filter twits  according to the given tracking request
 var tech_stream = client.stream("statuses/filter", 
 		{
-			track: TECH_STRINGS, 
+			track: "startup,football,business,technology", 
 			language: "en",
 			filter_level: "medium"
 		}, 
