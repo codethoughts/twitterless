@@ -4,7 +4,7 @@
 var express = require("express");
 var app = express();
 var Twitter = require("twitter");
-var MY_USERNAME = "nrdwnd";
+var MY_USERNAME = "mutablemind";
 var _ = require("lodash");
 
 var request_ip = require("request-ip");
@@ -17,7 +17,7 @@ app.get("/", function (req, res) {
 	dbip(ip).then(ip_info => {
 		console.log({"event": "Request / redirected", "ip_info": ip_info});
 	});
-	res.redirect("http://twitter.com/nrdwnd");
+	res.redirect("http://twitter.com/mutablemind");
 });
 
 app.listen(app.get("port"), function () {
@@ -48,7 +48,7 @@ user_stream.on("follow", function(event) {
 		client.post("direct_messages/new", 
 			{
 				screen_name: username, 
-				text: "Thanks for following me on twitter :3\nEnjoy the ride!"
+				text: "Thanks for following me on twitter :3 Keep in touch on dieser.me!"
 			}, function(error, data, response) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
