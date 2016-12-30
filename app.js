@@ -5,7 +5,6 @@ var express = require("express");
 var app = express();
 var Twitter = require("twitter");
 var MY_USERNAME = "mutablemind";
-var SITE = "dieser.me";
 var _ = require("lodash");
 
 var request_ip = require("request-ip");
@@ -49,7 +48,7 @@ user_stream.on("follow", function(event) {
 		client.post("direct_messages/new", 
 			{
 				screen_name: username, 
-				text: "Thanks for following me on twitter :3 Keep in touch on "+SITE+"!"
+				text: "Thanks for following me on twitter :3"
 			}, function(error, data, response) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
