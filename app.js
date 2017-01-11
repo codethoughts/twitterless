@@ -48,7 +48,7 @@ user_stream.on("follow", function(event) {
 		client.post("direct_messages/new", 
 			{
 				screen_name: username, 
-				text: "Thanks for following me on twitter :3"
+				text: "Thanks for following me on twitter ~(˘▾˘~) "
 			}, function(error, data, response) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
@@ -80,7 +80,7 @@ var TECH_STRINGS = require("./keywords.js").tech();
 // Statuses stream is used to filter twits  according to the given tracking request
 var tech_stream = client.stream("statuses/filter", 
 		{
-			track: "startup,football,business,technology", 
+			track: "react.js,node.js,nomad,business,technology", 
 			language: "en",
 			filter_level: "medium"
 		}, 
