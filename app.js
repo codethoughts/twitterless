@@ -75,6 +75,8 @@ user_stream.on("follow", function(event) {
 			{
 				screen_name: username,
 				text: "Thanks for following me on twitter :3 Keep in touch on dieser.me!"
+				screen_name: username, 
+				text: "Thanks for following me on twitter ~(˘▾˘~) "
 			}, function(error, data, response) {
 				if (!error) console.log({"event":"SEND DIRECT TO "+username});
 				else console.error(error);
@@ -107,6 +109,7 @@ var TECH_STRINGS = require("./keywords.js").tech();
 var tech_stream = client.stream("statuses/filter",
 		{
 			track: "technology",
+			track: "react.js,node.js,nomad,business,technology", 
 			language: "en",
 			filter_level: "medium"
 		},
