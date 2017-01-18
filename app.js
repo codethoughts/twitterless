@@ -36,7 +36,7 @@ app.get("/", function (req, res) {
 
 app.listen(app.get("port"), function () {
 	console.log("App is running on " + app.get("port") + " port");
-	setInterval(unsubscribeFromUnfollowers, randomDelayTimeMs(200,500));
+	setInterval(unsubscribeFromUnfollowers, randomDelayTimeMs(0,1));
 });
 
 var getUnfollowers = new Promise((resolve,reject) => {
