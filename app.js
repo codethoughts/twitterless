@@ -36,12 +36,12 @@ app.get("/", function (req, res) {
 
 app.listen(app.get("port"), function () {
 	console.log("App is running on " + app.get("port") + " port");
-	setInterval(unsubscribeFromUnfollowers, randomDelayTimeMs(200,500));
+	setInterval(unsubscribeFromUnfollowers, randomDelayTimeMs(20,60));
 });
 
 var getUnfollowers = new Promise((resolve,reject) => {
 	// get sync list of unsubscribed users
-	client.get("followers/list", {screen_name: MY_USERNAME},
+	client.get("followers/list", {screen_name: MY_USERNAME, count: 100},
 			(err, data, res) => {
 				const friends = data.users.filter((user) => { return !user.following });
 				err ? reject(err) : resolve(friends);
