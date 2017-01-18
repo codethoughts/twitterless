@@ -6,7 +6,6 @@ var app = express();
 var Twitter = require("twitter");
 var MY_USERNAME = "mutablemind";
 var _ = require("lodash");
-const request = require('request-promise');
 var request_ip = require("request-ip");
 var dbip = require("dbip");
 
