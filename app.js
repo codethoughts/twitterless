@@ -15,7 +15,7 @@ var client = new Twitter({
 	access_token_secret: process.env.ACCESS_TOKEN_SECRET
 });
 
-// perform unsubscribe task once per 1-2 hours
+// perform unsubscribe task every 1-2 hours
 setInterval(unsubscribeFromUnfollowers, randomDelayTimeMin(60,120));
 
 // unsubscribe from those who isn't following back
