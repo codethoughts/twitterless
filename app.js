@@ -1,14 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
-var express = require("express");
-var app = express();
-var Twitter = require("twitter");
-var MY_USERNAME = "mutablemind";
-var _ = require("lodash");
-const request = require('request-promise');
-var request_ip = require("request-ip");
-var dbip = require("dbip");
+const Twitter = require("twitter");
+const MY_USERNAME = "mutablemind";
 
 var client = new Twitter({
 	consumer_key: process.env.CONSUMER_KEY,
@@ -17,136 +11,112 @@ var client = new Twitter({
 	access_token_secret: process.env.ACCESS_TOKEN_SECRET
 });
 
-const isTweet = _.conforms({
-	contributors: _.isObject,
-	id_str: _.isString,
-	text: _.isString
-})
+// perform unsubscribe task once per 1-2 hours
+setInterval(unsubscribeFromUnfollowers, randomDelayTimeMin(60,120));
 
-
-app.set("port", (process.env.PORT || 5000));
-
-app.get("/", function (req, res) {
-	var ip = request_ip.getClientIp(req);
-	dbip(ip).then(ip_info => {
-		console.log({"event": "Request / redirected", "ip_info": ip_info});
-	});
-	res.redirect("http://twitter.com/"+MY_USERNAME);
-});
-
-app.listen(app.get("port"), function () {
-	console.log("App is running on " + app.get("port") + " port");
-	setInterval(unsubscribeFromUnfollowers, randomDelayTimeMs(0,1));
-});
-
-var getUnfollowers = new Promise((resolve,reject) => {
-	// get sync list of unsubscribed users
-	client.get("followers/list", {screen_name: MY_USERNAME},
-			(err, data, res) => {
-				const friends = data.users.filter((user) => { return !user.following });
-				err ? reject(err) : resolve(friends);
-			}
-		);
-});
-
+// unsubscribe from those who isn't following back
 function unsubscribeFromUnfollowers() {
-	getUnfollowers.then((users) => {
-		users.forEach((user)=>{
-			client.post("friendships/destroy", { screen_name: user.screen_name },
-			(err, data, res) => {
-				if (!err) console.log({"event":"DESTROY CONNECTION "+user.screen_name});
-				else console.error(err);
-			});
+	getFollowersUsernames.then(filterUnfollowers).then((unfollowers) => unfollowers.forEach(unsubscribe)).catch(console.error);
+}
+
+// filter all users who isn't following back
+function filterUnfollowers(usernames) {
+	return new Promise((res, rej) => {
+		client.get("friendships/lookup", { screen_name: usernames },
+		(err, data, resp) => {
+			if (!err) {
+				const unfollowers = data.filter((user) => !user.connections.includes("followed_by"));
+				console.log({"action":"friendships/lookup","username":usernames});
+				res(unfollowers);
+			} else rej(err);
 		});
-	}).catch((err) => {
-		console.error(err)
 	});
 }
 
-// User stream is used to handle primary action triggered by the user
-var user_stream = client.stream("user");
-// Handle follow event
-user_stream.on("follow", function(event) {
-	var username = event.source.screen_name;
-	if (username == MY_USERNAME) return;
-	var delayTime = randomDelayTimeMs(40,120);
-	setTimeout(function(){
-		client.post("direct_messages/new",
-			{
-				screen_name: username,
-				text: "Thanks for following me on twitter :3 Keep in touch on dieser.me!"
-				screen_name: username, 
-				text: "Thanks for following me on twitter ~(˘▾˘~) "
-			}, function(error, data, response) {
-				if (!error) console.log({"event":"SEND DIRECT TO "+username});
-				else console.error(error);
-			});
-	},delayTime);
+// get list of users who is following back
+const getFollowersUsernames = new Promise((res, rej) => {
+	client.get("followers/list", (err, data, resp) => {
+		if (!err) {
+			// reduce list of users into csv of usernames
+			const usernames = data.users.reduce((acc, cur) => acc + (acc.length ? ", " : "") + cur.screen_name, "");
+			console.log({"action":"friendships/list","username":usernames});
+			res(usernames);
+		} else {
+			rej(err);
+		}
+	});
+});
 
-	// Avoid bot or fake account following
-	var user_followers = event.source.followers_count;
-	var user_followings = event.source.friends_count;
-	var ratio = user_followers / user_followings;
-	if (ratio < 1.0) return;
-	setTimeout(function(){
+// unsubscribe from user
+function unsubscribe(user) {
+	return new Promise((res, rej) => {
+		client.post("friendships/destroy",
+		{ screen_name: user.screen_name },
+		(err, data, resp) => {
+			if (!err) {
+				console.log({"action":"friendships/destroy","username":user.screen_name});
+				res(true);
+			}
+			else rej(err);
+		});
+	});
+}
+
+// user stream is used to handle primary action triggered by the user
+const user_stream = client.stream("user");
+// handle event on follow
+user_stream.on("follow", (event) => {
+	const username = event.source.screen_name;
+	// incomming request
+	if (username != MY_USERNAME) {
+		const delayTime = randomDelayTimeMin(20,50);
+		setTimeout(sendDirect(username), delayTime);
+
+		const followers = event.source.followers_count;
+		const followings = event.source.friends_count;
+		// Avoid bot or fake account following
+		if (isValidForFollowingBack(followers,followings)) {
+			setTimeout(follow(username), delayTime);
+		}
+	}
+});
+// handle occured error while streaming
+user_stream.on("error", (err) => { throw err });
+// send direct message to user
+function sendDirect(username) {
+	return new Promise((res, rej) => {
+		client.post("direct_messages/new",
+		{ screen_name: username, text: "Thanks for following me on twitter (˘▾˘~)"},
+		(err, data, resp) => {
+			if (!err) console.log({"action":"direct_messages/new", "username":username});
+			else throw err;
+		});
+	});
+}
+// follow the user
+function follow(username) {
+	return new Promise((res,rej) => {
 		client.post("friendships/create", {
 			screen_name: username,
 			follow: true
-		}, function(error, data, response) {
-			if (!error) console.log({"event":"FOLLOW "+username});
-			else console.error(error);
+		}, (err, data, res) => {
+			if (!err) console.log({"action":"friendships/create", "username":username});
+			else throw err;
 		});
-	},delayTime);
-});
-
-user_stream.on("error", function(error) {
-	  console.error(error);
-});
-
-var TECH_STRINGS = require("./keywords.js").tech();
-
-// Statuses stream is used to filter twits  according to the given tracking request
-var tech_stream = client.stream("statuses/filter",
-		{
-			track: "technology",
-			track: "react.js,node.js,nomad,business,technology", 
-			language: "en",
-			filter_level: "medium"
-		},
-		function(stream) {
-			stream.on("data", function(event) {
-				var status_id = event.id;
-				var user = event.user;
-				var delayTime = randomDelayTimeMs(10,600);
-				if (isUserValidByFollowers(user,1000)) {
-					var url = event.urls.url;
-					var now = new Date().getTime();
-					var time = new Date(now + delayTime);
-					console.log({"event": "LIKE", "url": url,"time": time});
-					setTimeout(function () {
-						client.post("favorites/create", {id: status_id},
-							function(error, data, response) {
-								if (!error) console.log({"event":"LIKE "+status_id});
-								else console.error(error);
-							});
-					},delayTime);
-			}
-		});
-
-			stream.on("error", function(error) {
-				console.error(error);
-			});
-		}
-);
-
-var randomDelayTimeMs = function (min,max) {
-	return random(min*60000,max*60000);
+	});
 }
 
-var random = function (min,max) {
+// generate random value of minutes
+function randomDelayTimeMin(min,max) {
+	return random(min * 60000, max * 60000);
+}
+// generate random value
+function random(min,max) {
 	return Math.floor((Math.random() * max) + min);
 }
-
-var isUserValidByFollowers = function (user,count) {
-	return (user != null && user.followers_count > count ? true : false);
+// check on validity
+function isValidForFollowingBack(followers, followings) {
+	const ratio = user_followers / user_followings;
+	if (ratio < 0.8) return true;
+	else return false;
 }
