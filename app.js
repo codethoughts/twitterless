@@ -42,7 +42,7 @@ const getFollowersUsernames = new Promise((res, rej) => {
 	client.get("followers/list", (err, data, resp) => {
 		if (!err) {
 			// reduce list of users into csv of usernames
-			const usernames = data.users.reduce((acc, cur) => acc + (acc.length ? ", " : "") + cur.screen_name, "");
+			const usernames = data.users.reduce((acc, cur) => acc + (acc.length ? "," : "") + cur.screen_name, "");
 			console.log({"action":"friendships/list","username":usernames});
 			res(usernames);
 		} else {
