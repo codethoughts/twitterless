@@ -4,6 +4,10 @@
 const Twitter = require("twitter");
 const MY_USERNAME = "mutablemind";
 
+const PORT = process.env.PORT || 3000;
+const http = require("http");
+http.createServer().listen(PORT, console.log("App is running!"));
+
 var client = new Twitter({
 	consumer_key: process.env.CONSUMER_KEY,
 	consumer_secret: process.env.CONSUMER_SECRET,
