@@ -20,7 +20,10 @@ setInterval(unsubscribeFromUnfollowers, randomDelayTimeMin(60,120));
 
 // unsubscribe from those who isn't following back
 function unsubscribeFromUnfollowers() {
-	getFollowersUsernames.then(filterUnfollowers).then((unfollowers) => unfollowers.forEach(unsubscribe)).catch(console.error);
+	getFollowersUsernames
+		.then(filterUnfollowers)
+		.then((unfollowers) => unfollowers.forEach(unsubscribe))
+		.catch(console.error);
 }
 
 // filter all users who isn't following back
