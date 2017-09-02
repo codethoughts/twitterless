@@ -2,7 +2,7 @@
 "use strict";
 
 const Twitter = require("twitter");
-const MY_USERNAME = "mutablemind";
+const MY_USERNAME = ENV("username");
 
 const PORT = process.env.PORT || 3000;
 const http = require("http");
@@ -19,7 +19,7 @@ var client = new Twitter({
 setInterval(unsubscribeFromUnfollowers, randomDelayTimeMin(60,120));
 
 // unsubscribe from those who isn't following back
-function unsubscribeFromUnfollowers() {
+const unsubscribeFromUnfollowers = () {
 	getFollowersUsernames
 		.then(filterUnfollowers)
 		.then((unfollowers) => unfollowers.forEach(unsubscribe))
@@ -27,7 +27,7 @@ function unsubscribeFromUnfollowers() {
 }
 
 // filter all users who isn't following back
-function filterUnfollowers(usernames) {
+const filterUnfollowers = (usernames) {
 	return new Promise((res, rej) => {
 		client.get("friendships/lookup", { screen_name: usernames },
 		(err, data, resp) => {
@@ -55,7 +55,7 @@ const getFollowersUsernames = new Promise((res, rej) => {
 });
 
 // unsubscribe from user
-function unsubscribe(user) {
+const unsubscribe = (user) {
 	return new Promise((res, rej) => {
 		client.post("friendships/destroy",
 		{ screen_name: user.screen_name },
@@ -82,7 +82,7 @@ user_stream.on("follow", (event) => {
 		const followers = event.source.followers_count;
 		const followings = event.source.friends_count;
 		// Avoid bot or fake account following
-		if (isValidForFollowingBack(followers,followings)) {
+		if (isValidPopularityIndex(followers,followings)) {
 			setTimeout(follow(username), delayTime);
 		}
 	}
@@ -90,7 +90,7 @@ user_stream.on("follow", (event) => {
 // handle occured error while streaming
 user_stream.on("error", (err) => { throw err });
 // send direct message to user
-function sendDirect(username) {
+const sendDirect = (username) {
 	return new Promise((res, rej) => {
 		client.post("direct_messages/new",
 		{ screen_name: username, text: "Thanks for following me on twitter (˘▾˘~)"},
@@ -101,7 +101,7 @@ function sendDirect(username) {
 	});
 }
 // follow the user
-function follow(username) {
+const follow = (username) {
 	return new Promise((res,rej) => {
 		client.post("friendships/create", {
 			screen_name: username,
@@ -114,15 +114,15 @@ function follow(username) {
 }
 
 // generate random value of minutes
-function randomDelayTimeMin(min,max) {
+const randomDelayTimeMin = (min, max) {
 	return random(min * 60000, max * 60000);
 }
 // generate random value
-function random(min,max) {
+const random = (min, max) {
 	return Math.floor((Math.random() * max) + min);
 }
 // check on validity
-function isValidForFollowingBack(followers, followings) {
+const isValidPopularityIndex = (followers, followings) {
 	const ratio = user_followers / user_followings;
 	if (ratio < 0.8) return true;
 	else return false;
