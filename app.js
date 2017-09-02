@@ -19,7 +19,7 @@ var client = new Twitter({
 setInterval(unsubscribeFromUnfollowers, randomDelayTimeMin(60,120));
 
 // unsubscribe from those who isn't following back
-const unsubscribeFromUnfollowers = () {
+const unsubscribeFromUnfollowers = () => {
 	getFollowersUsernames
 		.then(filterUnfollowers)
 		.then((unfollowers) => unfollowers.forEach(unsubscribe))
@@ -27,7 +27,7 @@ const unsubscribeFromUnfollowers = () {
 }
 
 // filter all users who isn't following back
-const filterUnfollowers = (usernames) {
+const filterUnfollowers = (usernames) => {
 	return new Promise((res, rej) => {
 		client.get("friendships/lookup", { screen_name: usernames },
 		(err, data, resp) => {
@@ -55,7 +55,7 @@ const getFollowersUsernames = new Promise((res, rej) => {
 });
 
 // unsubscribe from user
-const unsubscribe = (user) {
+const unsubscribe = (user) => {
 	return new Promise((res, rej) => {
 		client.post("friendships/destroy",
 		{ screen_name: user.screen_name },
@@ -101,7 +101,7 @@ const sendDirect = (username) {
 	});
 }
 // follow the user
-const follow = (username) {
+const follow = (username) => {
 	return new Promise((res,rej) => {
 		client.post("friendships/create", {
 			screen_name: username,
@@ -114,15 +114,15 @@ const follow = (username) {
 }
 
 // generate random value of minutes
-const randomDelayTimeMin = (min, max) {
+const randomDelayTimeMin = (min, max) => {
 	return random(min * 60000, max * 60000);
 }
 // generate random value
-const random = (min, max) {
+const random = (min, max) => {
 	return Math.floor((Math.random() * max) + min);
 }
 // check on validity
-const isValidPopularityIndex = (followers, followings) {
+const isValidPopularityIndex = (followers, followings) => {
 	const ratio = user_followers / user_followings;
 	if (ratio < 0.8) return true;
 	else return false;
